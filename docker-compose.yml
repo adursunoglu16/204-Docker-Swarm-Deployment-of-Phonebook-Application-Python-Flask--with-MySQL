@@ -17,7 +17,7 @@ services:
             - clarusnet
     app-server:
         env_file: .env # template user datada .env diye bir file olusturcaz ve icine {ECR_REGISTRY}/${APP_REPO_NAME} olusucak ismi gondercez ve compose daoradan cekecek
-        image: "${ECR_REPO}:latest" #  {ECR_REGISTRY}/${APP_REPO_NAME}:latest olarak da yazabilirdin mesela
+        image: "${ECR_REPO}:latest" #  {ECR_REGISTRY}/${APP_REPO_NAME}:latest olarak da yazabilirdin mesela, cfn ile yapcaksan oyle kullan cunku cfnde oyle yazili
         deploy:
             mode: global # her nodeda 1 tane ac demek
             update_config: # containerlara guncelleme yaptigimda 2 ser 2 ser acip kapat
