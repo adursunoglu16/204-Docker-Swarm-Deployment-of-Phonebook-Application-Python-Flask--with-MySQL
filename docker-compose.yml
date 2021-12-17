@@ -9,20 +9,20 @@ services:
             MYSQL_USER: admin
             MYSQL_PASSWORD: Clarusway_1
         volumes:
-            - db-data:/var/lib/mysql
+            - db-data:/var/lib/mysql # here we are using named volume.docker swarm bizim yerimize ayarliyor datanin kaybolmamasini
         configs:
-            - source: table #name is up to you
+            - source: initialdatabase #name is up to you
               target: /docker-entrypoint-initdb.d/init.sql # docker documentation says it can run init.sql file if you put it under /docker-entrypoint-initdb.d
         networks:
             - clarusnet
     app-server:
-        env_file: .env # template user datada .env diye bir file olusturcaz ve icine {ECR_REGISTRY}/${APP_REPO_NAME} olusucak ismi gondercez ve compose daoradan cekecek
+        # env_file: .env    # template user datada .env diye bir file olusturcaz ve icine {ECR_REGISTRY}/${APP_REPO_NAME} olusucak ismi gondercez ve compose da oradan cekecek
         image: "${ECR_REPO}:latest" #  {ECR_REGISTRY}/${APP_REPO_NAME}:latest olarak da yazabilirdin mesela, cfn ile yapcaksan oyle kullan cunku cfnde oyle yazili
         deploy:
-            mode: global # her nodeda 1 tane ac demek
+            mode: global # her nodeda 1 tane ac demek. mysql icin boyle demedim mesela.
             update_config: # containerlara guncelleme yaptigimda 2 ser 2 ser acip kapat
                 parallelism: 2
-                delay: 5s
+                delay: 5s # iki container acilip-kapandiktan sonra 5 sn bekle diger ikiliyi acip kapamak icin
                 order: start-first
         ports:
             - "80:80"
@@ -30,11 +30,11 @@ services:
             - clarusnet
 networks:
     clarusnet:
-        driver: overlay
+        driver: overlay   # tum nodelar adina tek bir ortak IP den hizmet vermesini sagliyor.
 
 volumes: # here we are using named volume
     db-data:
 
 configs:
-    table: #name is up to you
+    initialdatabase: #name is up to you
         file: ./init.sql

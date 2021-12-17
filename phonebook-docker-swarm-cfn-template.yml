@@ -14,24 +14,24 @@ Parameters:
     ConstraintDescription: Must be one of the existing EC2 KeyPair
 
 Resources:
-  InstanceConnectPolicy:
+  InstanceConnectPolicy: # policy olusturyoruz ec2lar birbirlerine baglanabilsin diye
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
       PolicyDocument: #required
-        Version: 2012-10-17
+        Version: 2012-10-17 #docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-set-up.html
         Statement:
           - Effect: Allow
             Action:
               - ec2-instance-connect:SendSSHPublicKey
             Resource:
               - !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*
-            Condition: {"StringEquals": {"ec2:osuser": "ec2-user"}}
+            Condition: {"StringEquals": {"ec2:osuser": "ec2-user"}} # {"StringEquals": {"aws:ResourceTag/project": "204"}} seklinde de kullanabilirsin
           - Effect: Allow
             Action:
               - ec2:DescribeInstances
             Resource: "*"
   
-  EC2InstanceConnect:
+  EC2InstanceConnect: # yukaridaki policy ve AmazonEC2ContainerRegistryFullAccess policy i role atiyoz. 
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument: 
@@ -45,7 +45,7 @@ Resources:
       ManagedPolicyArns:
         - !Ref InstanceConnectPolicy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
-  EC2ConnectProfile:
+  EC2ConnectProfile: # role u ec2 ya baglamak icin profile.
     Type: "AWS::IAM::InstanceProfile"
     Properties:
       Roles: #required
@@ -56,7 +56,7 @@ Resources:
       GroupDescription: Enable SSH and HTTP for Docker Machines
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 80
+          FromPort: 80  # for application
           ToPort: 80
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
@@ -80,7 +80,7 @@ Resources:
           ToPort: 4789
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: 8080
+          FromPort: 8080 # for visualizer
           ToPort: 8080
           CidrIp: 0.0.0.0/0
   DockerSwarmManagerLT:
@@ -91,7 +91,7 @@ Resources:
         InstanceType: t2.micro
         KeyName: !Ref KeyPairName
         IamInstanceProfile: 
-          Arn: !GetAtt EC2ConnectProfile.Arn
+          Arn: !GetAtt EC2ConnectProfile.Arn # instance a profile attach ederken !Ref ile Launch template attach ederken ise arn !GetAtt ile
         SecurityGroupIds:
           - !GetAtt DockerMachinesSecurityGroup.GroupId
         UserData:
@@ -165,13 +165,19 @@ Resources:
       ImageId: ami-0aeeebd8d2ab47354
       InstanceType: t2.micro
       KeyName: !Ref KeyPairName
-      IamInstanceProfile: !Ref EC2ConnectProfile
+      IamInstanceProfile: !Ref EC2ConnectProfile # instance a profile attach ederken !Ref ile Launch template attach ederken ise arn !GetAtt ile
       SecurityGroupIds:
         - !GetAtt DockerMachinesSecurityGroup.GroupId
       Tags:                
         -                        
           Key: Name
           Value: !Sub Docker Manager 1st of ${AWS::StackName}
+# yukarida policyde {"StringEquals": {"aws:ResourceTag/project": "204"}} seklinde kullansaydik burasi;
+#     Tags:                
+#       - Key: Name
+#         Value: !Sub Docker Manager 1st of ${AWS::StackName}
+#       - Key: project
+#         Name: "204"       
       UserData: 
         Fn::Base64: 
           !Sub 
@@ -222,8 +228,8 @@ Resources:
               docker-compose config | docker stack deploy --with-registry-auth -c - phonebook
             - ECR_REGISTRY: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com
               APP_REPO_NAME: clarusway-repo/phonebook-app
-              GITHUB_REPO: https://github.com/davidclarusway/phonebook-app-test.git
-              GIT_FILE_URL: https://raw.githubusercontent.com/davidclarusway/phonebook-app-test/main/
+              GITHUB_REPO: https://github.com/davidclarusway/phonebook-app-test.git # dockerfile build ederken gidip github repodan alcak dockerfile i docker build --force-rm -t "${ECR_REGISTRY}/${APP_REPO_NAME}:latest" ${GITHUB_REPO}
+              GIT_FILE_URL: https://raw.githubusercontent.com/davidclarusway/phonebook-app-test/main/ 
   DockerManager2:
     Type: AWS::EC2::Instance
     DependsOn:
@@ -235,7 +241,13 @@ Resources:
       Tags:                
         -                        
           Key: Name
-          Value: !Sub Docker Manager 2nd of ${AWS::StackName} 
+          Value: !Sub Docker Manager 2nd of ${AWS::StackName}
+# yukarida policyde {"StringEquals": {"aws:ResourceTag/project": "204"}} seklinde kullansaydik burasi;
+#     Tags:                
+#       - Key: Name
+#         Value: !Sub Docker Manager 1st of ${AWS::StackName}
+#       - Key: project
+#         Name: "204" 
   DockerManager3:
     Type: AWS::EC2::Instance
     DependsOn:
@@ -247,7 +259,13 @@ Resources:
       Tags:                
         -                        
           Key: Name
-          Value: !Sub Docker Manager 3rd of ${AWS::StackName} 
+          Value: !Sub Docker Manager 3rd of ${AWS::StackName}
+# yukarida policyde {"StringEquals": {"aws:ResourceTag/project": "204"}} seklinde kullansaydik burasi;
+#     Tags:                
+#       - Key: Name
+#         Value: !Sub Docker Manager 1st of ${AWS::StackName}
+#       - Key: project
+#         Name: "204" 
   DockerWorker1:
     Type: AWS::EC2::Instance
     DependsOn:
@@ -259,7 +277,13 @@ Resources:
       Tags:                
         -                        
           Key: Name
-          Value: !Sub Docker Worker 1st of ${AWS::StackName} 
+          Value: !Sub Docker Worker 1st of ${AWS::StackName}
+# yukarida policyde {"StringEquals": {"aws:ResourceTag/project": "204"}} seklinde kullansaydik burasi;
+#     Tags:                
+#       - Key: Name
+#         Value: !Sub Docker Worker 1st of ${AWS::StackName}
+#       - Key: project
+#         Name: "204" 
   DockerWorker2:
     Type: AWS::EC2::Instance
     DependsOn:
@@ -271,9 +295,15 @@ Resources:
       Tags:                
         -                        
           Key: Name
-          Value: !Sub Docker Worker 2nd of ${AWS::StackName} 
+          Value: !Sub Docker Worker 2nd of ${AWS::StackName}
+# yukarida policyde {"StringEquals": {"aws:ResourceTag/project": "204"}} seklinde kullansaydik burasi;
+#     Tags:                
+#       - Key: Name
+#         Value: !Sub Docker Worker 1st of ${AWS::StackName}
+#       - Key: project
+#         Name: "204" 
 Outputs:
-  1stDockerManagerDashboard:
+  VisualizerDashboard:
     Description: Dashboard for Docker Swarm
     Value: !Sub 
       - http://${PublicAddress}:8080

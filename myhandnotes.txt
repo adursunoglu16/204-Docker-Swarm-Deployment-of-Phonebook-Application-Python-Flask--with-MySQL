@@ -1,20 +1,16 @@
 My notes for this project
 Infrastructure
     - public github repo
-    - docker swarm
+    - docker swarm as Orchestrator
         - 3 manager
         - 2 worker
-            - both can connect eachother
-            - ec2 instance connect cli (v2)
-            - IAM policy
-        - managers can pull and push image from ECR
-        - policy for ECR full access
-    - image repo AWS ECR
-    - main.tf
-
+    - Image Repository (AWS ECR)
+    Should be able to
+        - Every EC2 is able to talk each other (EC2 Connect CLI, IAM Policy)
+        - Grand Master can pull image from ECR and push image to ECR ( ECR credential helper, reach ECR with cli command)
+        - Manager and Workers can pull image from AWS ECR. ( ECR credential helper)
 Application
     - Dockerfile
         - image for app-server
     docker-compose.yml
         - services: app-server and mysql
-        - app-server image will be pull from AWS ECR
